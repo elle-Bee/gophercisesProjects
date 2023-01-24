@@ -13,12 +13,13 @@ func main() {
 
 	file, err := os.Open(*csvFilename)
 	checkErrNil(err)
-	os.Exit(1)
 
 	r := csv.NewReader(file)
 	lines, err := r.ReadAll()
 	checkErrNil(err)
 	fmt.Println(lines)
+
+	defer file.Close()
 
 }
 
