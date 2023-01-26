@@ -15,11 +15,13 @@ func main() {
 	checkErrNil(err)
 
 	r := csv.NewReader(file)
-	lines, err := r.ReadAll()
+	listProblems, err := r.ReadAll()
 	checkErrNil(err)
-	fmt.Println(lines)
+	fmt.Println(listProblems)
 
 	defer file.Close()
+
+	parseProblems(listProblems)
 
 }
 
@@ -27,4 +29,20 @@ func checkErrNil(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+type problem struct {
+	q string
+	a string
+}
+
+func parseProblems(listProblems [][]string) []problem {
+	returnedProblems := make([]problem, len(listProblems))
+	for i, line := range listProblems {
+		returnedProblems[i] = problem{
+			q: line[0],
+			a: line[1],
+		}
+	}
+	return returnedProblems
 }
