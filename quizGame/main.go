@@ -5,9 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
+	// CSV file parsing
 	csvFilename := flag.String("csv", "problems.csv", "CSV file in format of 'question,answer' to be importeed")
 	flag.Parse()
 
@@ -17,11 +19,23 @@ func main() {
 	r := csv.NewReader(file)
 	listProblems, err := r.ReadAll()
 	checkErrNil(err)
-	fmt.Println(listProblems)
 
 	defer file.Close()
 
-	parseProblems(listProblems)
+	//Questionaire
+	var correct int
+	for i, p := range parseProblems(listProblems) {
+		var ans string
+		fmt.Printf("Q%d: %s = ", i+1, p.q)
+		fmt.Scanf("%s", &ans)
+		if ans == p.a {
+			fmt.Printf("Correct! \n")
+			correct++
+		} else {
+			fmt.Printf("Oops! That's incorrect. \n")
+		}
+	}
+	fmt.Printf("Congratulations! You've scored %d/%d", correct, len(listProblems))
 
 }
 
@@ -40,8 +54,9 @@ func parseProblems(listProblems [][]string) []problem {
 	returnedProblems := make([]problem, len(listProblems))
 	for i, line := range listProblems {
 		returnedProblems[i] = problem{
-			q: line[0],
-			a: line[1],
+			// Validates the CSV file so that no spaces are counted
+			q: strings.TrimSpace(line[0]),
+			a: strings.TrimSpace(line[1]),
 		}
 	}
 	return returnedProblems
