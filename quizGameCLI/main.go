@@ -13,6 +13,7 @@ import (
 func main() {
 	// CSV file parsing
 	csvFilename := flag.String("csv", "problems.csv", "CSV file in format of 'question,answer' to be importeed")
+	timeLimit := flag.Int("timer", 60, "The time limit for the quiz game in seconds")
 	flag.Parse()
 
 	file, err := os.Open(*csvFilename)
@@ -21,6 +22,8 @@ func main() {
 	r := csv.NewReader(file)
 	listProblems, err := r.ReadAll()
 	checkErrNil(err)
+
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
 	//Making the order of questions random
 	rand.Seed(time.Now().Unix())
@@ -64,7 +67,7 @@ func parseProblems(listProblems [][]string) []problem {
 	for i, line := range listProblems {
 		returnedProblems[i] = problem{
 			// Validates the CSV file so that no spaces are counted
-			q: strings.TrimSpace(line[0]),
+			q: line[0],
 			a: strings.TrimSpace(line[1]),
 		}
 	}
