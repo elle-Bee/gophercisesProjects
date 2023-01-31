@@ -13,7 +13,7 @@ import (
 func main() {
 	// CSV file parsing
 	csvFilename := flag.String("csv", "problems.csv", "CSV file in format of 'question,answer' to be importeed")
-	timeLimit := flag.Int("timer", 60, "The time limit for the quiz game in seconds")
+	timeLimit := flag.Int("timer", 20, "The time limit for the quiz game in seconds")
 	flag.Parse()
 
 	file, err := os.Open(*csvFilename)
@@ -23,8 +23,6 @@ func main() {
 	listProblems, err := r.ReadAll()
 	checkErrNil(err)
 
-	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
-
 	//Making the order of questions random
 	rand.Seed(time.Now().Unix())
 	rand.Shuffle(len(listProblems), func(i, j int) {
@@ -32,21 +30,32 @@ func main() {
 	})
 
 	//Questionaire
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 	var correct int
+
+quizLoop:
 	for i, p := range parseProblems(listProblems) {
-		var ans string
 		fmt.Printf("Q%d: %s = ", i+1, p.q)
-		fmt.Scanf("%s", &ans)
-		if ans == p.a {
-			fmt.Printf("Correct! \n")
-			correct++
-		} else {
-			fmt.Printf("Oops! That's incorrect. \n")
+		ansChannel := make(chan string)
+
+		go func() {
+			var ans string
+			fmt.Scanf("%s\n", &ans)
+			ansChannel <- ans
+		}()
+
+		select {
+		case <-timer.C:
+			fmt.Println()
+			break quizLoop
+		case ans := <-ansChannel:
+			if ans == p.a {
+				correct++
+			}
 		}
 	}
 
 	fmt.Printf("Congratulations! You've scored %d/%d", correct, len(listProblems))
-
 	defer file.Close()
 
 }
